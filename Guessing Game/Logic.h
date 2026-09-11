@@ -3,10 +3,13 @@
 struct Player
 {
 	string name = "Jamaal";
-	int money = 500;
+	float money = 500;
 	int bet;
 	int vault;
 	int guess;
+	int depo;
+
+	string vaultCode;
 
 	float gameWin;
 	float gameLoss;
@@ -14,7 +17,7 @@ struct Player
 
 	void Wins(float multiplier)
 	{
-		money += (bet * multiplier) - 1;
+		money += bet * (multiplier - 1);
 		gameWin++;
 		gamesPlayed++;
 	}
@@ -34,24 +37,19 @@ struct Player
 	float winRate()
 	{
 
-		if (gamesPlayed == 0) return 0.0f;
+			float winrate = (gameWin / gamesPlayed) * 100.0f;
 
-		float winrate = (gameWin / gamesPlayed) * 100.0f;
-		
-		if (winrate > 50.0f)
-		{
-			cout << green << winrate << reset;
-		}
-		
-		else if (winrate < 50.0f)
-		{
-			cout << red << winrate << reset;
-		}
+			if (gamesPlayed == 0) return 0.0f;
+			return winrate;
 
 	}
 
-	void stats()
+	void Stats()
 	{
+		clear();
+		cout << brightYellow << name << reset << "'s PNL" << endl;
+		space();
+
 		cout << "Money: " << money << endl;
 		cout << "Vault: " << vault << endl;
 		cout << "NetWorth: " << netWorth() << endl;
@@ -60,7 +58,15 @@ struct Player
 		cout << "Wins: " << gameWin << endl;
 		cout << "Losses: " << gameLoss << endl;
 		cout << "Games Played: " << gamesPlayed << endl;
-		cout << "Win Rate: " << winRate() << "%" << endl;
+		
+		float rate = winRate();
+		cout << "Win Rate: ";
+		if (rate >= 50.0f) cout << green << rate << "%" << reset << endl;
+		else if (rate < 50) cout << red << rate << "%" << reset << endl;
+		else cout << rate << endl;
+
+		getKey();
+		clear();
 	}
 };
 

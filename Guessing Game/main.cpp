@@ -16,7 +16,9 @@ auto main() -> int
 
 	while (true)
 	{
-		cout << "Welcome To Guess My Number! | Balance: ";
+		clear();
+
+		cout << "Welcome To Guess My Number! | Balance: $";
 		if (player.money > 0)
 		{
 			cout << green << player.money << reset << endl;
@@ -80,12 +82,17 @@ auto main() -> int
 				continue;
 			}
 
+			if (player.bet < 10)
+			{
+				cout << "[!] $10 is minimum bet." << endl;
+			}
+
 			clear();
 
-			cout << "The Computer will guess 10 times! | Bet Amount: " << player.bet << endl;
+			cout << "The Computer Will Have 20 Guesses! | Bet Amount: " << player.bet << endl;
 			space();
 
-			cout << "Guess a Number [ 1 - 100 ]" << endl;
+			cout << "Guess a Number [ 10 - 100 ]" << endl;
 			cout << "Number:";
 			cin >> player.guess;
 			
@@ -97,21 +104,23 @@ auto main() -> int
 				continue;
 			}
 
-			for (size_t i = 0; i < 10; i++)
+			for (size_t i = 0; i < 20; i++)
 			{
-				int computer = (rand() % 10000) / 100.0f;
-				cout << "Computer: " << computer << " | Guess # " << i + 1 << endl;
+				int computer = ((rand() % 10000) / 100 + 1);
+				cout << "Computer: " << setw(3) << computer << " | " << "Guess # " << i + 1 << endl;
 				this_thread::sleep_for(chrono::milliseconds(500));
 				numbers.push_back(computer);
 			}
 
 			bool computerFound = false;
+			int matchedAt = 0;
 
 			for (size_t i = 0; i < numbers.size(); i++)
 			{
 				if (player.guess == numbers[i])
 				{
 					computerFound = true;
+					matchedAt = i + 1;
 					break;
 				}
 
@@ -119,31 +128,55 @@ auto main() -> int
 
 			if (computerFound)
 			{ 
-				cout << "You Lose!" << endl;
+				space();
+				cout << "You " << red << "Lose! " << reset << " || The computer found you on guess # " << matchedAt << endl;
 				int moneySnapshot = player.money;
 				player.Loss();
-				cout << moneySnapshot << " -> " << player.money << "(" << red << "-" << player.bet << reset << ")" << endl;
+				cout << moneySnapshot << " -> " << player.money << " (" << red << "-" << player.bet << reset << ")" << endl;
 				computerFound = false;
+				numbers.clear();
 				getKey();
 				clear();
 			}
-
+			
 			else
 			{
 				cout << "You Win!" << endl;
 				int moneySnapshot = player.money;
 				player.Wins(1.2f);
-				cout << moneySnapshot << " -> " << player.money << "(" << green << "+" << player.bet << reset << ")" << endl;
-				getKey();
+				cout << moneySnapshot << " -> " << player.money << " (" << green << "+" << player.bet * (1.2 - 1) << reset << ")" << endl;
+				numbers.clear();
+				getKey(); 
 				clear();
 			}
 			break;
 		}
 
 		case Deposit:
+		{
 			clear();
-			
-		break;
+
+			cout << "Balance: $" << player.money << endl;
+			space();
+
+			cout << "How much would you like to deposit? [ 100 - 5000 ]" << endl;
+			cout << "$";
+			cin >> player.depo;
+
+			if (player.depo < 100 || player.depo > 5000)
+			{
+				cout << "[!] Invalid Input" << endl;
+				pause();
+				break;
+			}
+
+			int moneySnap = player.money;
+			player.money += player.depo;
+			cout << "Successfully Deposited " << moneySnap << " -> " << player.money << " (" << green << "+" << player.depo << reset << ")" << endl;
+			player.depo = 0;
+			getKey();
+			break;
+		}
 
 		case Vault:
 			clear();
@@ -155,7 +188,7 @@ auto main() -> int
 		break;
 
 		case PNL:
-
+			player.Stats();
 		break;
 
 		case Quit:
