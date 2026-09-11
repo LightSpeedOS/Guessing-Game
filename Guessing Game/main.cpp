@@ -53,6 +53,15 @@ auto main() -> int
 		{
 		case Play:
 		{
+
+			if (player.money == 0)
+			{
+				clear();
+				cout << "[!] You Need To Deposit" << endl;
+				pause();
+				break;
+			}
+
 			clear();
 			cout << "How much would you like to bet?" << endl;
 			cout << "Amount:";
@@ -179,9 +188,108 @@ auto main() -> int
 		}
 
 		case Vault:
+		{
+			clear();
+			
+			string passCode;
+			int pinNumber;
+			bool failed = false;
+			bool hasZero = false;;
+
+			if (player.hasPasscode == false)
+			{
+				cout << "Create a Six Digit Pin" << endl;
+				cout << "Pin:";
+				cin >> passCode;
+
+				for (size_t j = 0; j < passCode.size(); j++)
+				{
+					if (passCode[j] == '0')
+					{
+						hasZero = true;
+					}
+				}
+
+				if (hasZero)
+				{
+					space();
+					cout << "Passcode cannot contain any zero's" << endl;
+					hasZero = false;
+					pause();
+					continue;
+				}
+
+				if (passCode.size() != 6)
+				{
+					space();
+					cout << "[!] Passcode Must Contain Six Digits." << endl;
+					pause();
+					break;
+				}
+
+
+				try
+				{
+					pinNumber = stoi(passCode);
+					cout << "[+] " << green << "Successfully " << reset << "Created Passcode | Passcode: " << passCode << endl;
+					player.hasPasscode = true;
+					getKey();
+				}
+				catch (invalid_argument&)
+				{
+					clear();
+					cout << "[!] Error Numbers Only" << endl;
+					pause();
+					failed = true;
+				}
+				catch (out_of_range&)
+				{
+					clear();
+					cout << "[!] Six Digits Only." << endl;
+					pause();
+					failed = true;
+				}
+
+				if (failed)
+				{
+					failed = false;
+					continue;
+				}
+			}
 			clear();
 
-		break;
+			int toVault = 0;
+			int vaultSnap = 0;
+			cout << "How much money would you like to vault | Vault Balance: $" << player.vault << endl;
+			space(); 
+
+			cout << "$";
+			cin >> toVault;
+
+			if (toVault > player.money)
+			{
+				clear();
+				cout << "[!] Error, Insufficient Balance" << endl;
+				pause();
+				break;
+			}
+
+			if (toVault < 0)
+			{
+				clear();
+				cout << "[!] Error, You cannot vault a negative number" << endl;
+				pause();
+				break;
+			}
+
+			cout << "[+] " << green << "Successfully " << reset << "Vaulted " << toVault << endl;
+			player.vault += toVault;
+			player.money -= toVault;
+			cout << "Vault Balance: $" << player.vault << endl;
+			getKey();
+
+			break;
+		}
 		
 		case Loan:
 

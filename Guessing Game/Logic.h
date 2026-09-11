@@ -9,6 +9,8 @@ struct Player
 	int guess;
 	int depo;
 
+	bool hasPasscode = false;
+
 	string vaultCode;
 
 	float gameWin;
