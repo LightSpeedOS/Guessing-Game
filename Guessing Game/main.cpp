@@ -40,7 +40,8 @@ auto main() -> int
 		cout << "[3] Vault" << endl;
 		cout << "[4] Loan" << endl;
 		cout << "[5] Profit & Loss (PNL)" << endl;
-		cout << "[6] " << red << "Quit" << reset << endl;
+		cout << "[6] Settings" << endl;
+		cout << "[7] " << red << "Quit" << reset << endl;
 		cout << "> ";
 		cin >> option;
 
@@ -53,6 +54,7 @@ auto main() -> int
 		{
 		case Play:
 		{
+			numbers.clear();
 
 			if (player.money == 0)
 			{
@@ -93,7 +95,10 @@ auto main() -> int
 
 			if (player.bet < 10)
 			{
+				clear();
 				cout << "[!] $10 is minimum bet." << endl;
+				pause();
+				break;
 			}
 
 			clear();
@@ -105,7 +110,7 @@ auto main() -> int
 			cout << "Number:";
 			cin >> player.guess;
 			
-			if (player.guess < 0 || player.guess > 100)
+			if (player.guess < 1 || player.guess > 100)
 			{
 				space();
 				cout << "[!] Invalid Number" << endl;
@@ -117,7 +122,8 @@ auto main() -> int
 			{
 				int computer = ((rand() % 10000) / 100 + 1);
 				cout << "Computer: " << setw(3) << computer << " | " << "Guess # " << i + 1 << endl;
-				this_thread::sleep_for(chrono::milliseconds(500));
+
+				if (!player.fastMode) this_thread::sleep_for(chrono::milliseconds(500));
 				numbers.push_back(computer);
 			}
 
@@ -139,11 +145,10 @@ auto main() -> int
 			{ 
 				space();
 				cout << "You " << red << "Lose! " << reset << " || The computer found you on guess # " << matchedAt << endl;
-				int moneySnapshot = player.money;
+				float moneySnapshot = player.money;
 				player.Loss();
 				cout << moneySnapshot << " -> " << player.money << " (" << red << "-" << player.bet << reset << ")" << endl;
 				computerFound = false;
-				numbers.clear();
 				getKey();
 				clear();
 			}
@@ -151,10 +156,9 @@ auto main() -> int
 			else
 			{
 				cout << "You Win!" << endl;
-				int moneySnapshot = player.money;
+				float moneySnapshot = player.money;
 				player.Wins(1.2f);
-				cout << moneySnapshot << " -> " << player.money << " (" << green << "+" << player.bet * (1.2 - 1) << reset << ")" << endl;
-				numbers.clear();
+				cout << moneySnapshot << " -> " << player.money << " (" << green << "+" << player.money - moneySnapshot << reset << ")" << endl;
 				getKey(); 
 				clear();
 			}
@@ -179,7 +183,7 @@ auto main() -> int
 				break;
 			}
 
-			int moneySnap = player.money;
+			float moneySnap = player.money;
 			player.money += player.depo;
 			cout << "Successfully Deposited " << moneySnap << " -> " << player.money << " (" << green << "+" << player.depo << reset << ")" << endl;
 			player.depo = 0;
@@ -193,105 +197,204 @@ auto main() -> int
 			
 			string passCode;
 			int pinNumber;
+			int vaultOption;
 			bool failed = false;
 			bool hasZero = false;;
 
-			if (player.hasPasscode == false)
+			cout << "Money Balance: " << player.money << " | Vault Balance : " << player.vault << endl;
+			space();
+
+			cout << "[1] Deposit" << endl;
+			cout << "[2] Withdrawal" << endl;
+			cout << "> ";
+			cin >> vaultOption;
+
+			if (input())
 			{
-				cout << "Create a Six Digit Pin" << endl;
-				cout << "Pin:";
-				cin >> passCode;
+				continue;
+			}
+			switch (vaultOption)
+			{
 
-				for (size_t j = 0; j < passCode.size(); j++)
+
+			case Depo:
+			{
+				clear();
+
+				if (player.hasPasscode == false)
 				{
-					if (passCode[j] == '0')
+					cout << "Create a Six Digit Pin" << endl;
+					cout << "Pin:";
+					cin >> passCode;
+
+					if (input())
 					{
-						hasZero = true;
+						continue;
 					}
-				}
 
-				if (hasZero)
-				{
-					space();
-					cout << "Passcode cannot contain any zero's" << endl;
-					hasZero = false;
-					pause();
-					continue;
-				}
+					for (size_t j = 0; j < passCode.size(); j++)
+					{
+						if (passCode[j] == '0')
+						{
+							hasZero = true;
+						}
+					}
 
-				if (passCode.size() != 6)
+					if (hasZero)
+					{
+						space();
+						cout << "Passcode cannot contain any zero's" << endl;
+						hasZero = false;
+						pause();
+						continue;
+					}
+
+					if (passCode.size() != 6)
+					{
+						space();
+						cout << "[!] Passcode Must Contain Six Digits." << endl;
+						pause();
+						break;
+					}
+
+
+					try
+					{
+						pinNumber = stoi(passCode);
+						cout << "[+] " << green << "Successfully " << reset << "Created Passcode | Passcode: " << passCode << endl;
+						player.hasPasscode = true;
+						getKey();
+					}
+					catch (invalid_argument&)
+					{
+						clear();
+						cout << "[!] Error Numbers Only" << endl;
+						pause();
+						failed = true;
+					}
+					catch (out_of_range&)
+					{
+						clear();
+						cout << "[!] Six Digits Only." << endl;
+						pause();
+						failed = true;
+					}
+
+					if (failed)
+					{
+						failed = false;
+						continue;
+					}
+					break;
+
+				}
+				clear();
+
+				int toVault = 0;
+				int vaultSnap = 0;
+				cout << "How much money would you like to vault | Vault Balance: $" << player.vault << endl;
+				space();
+
+				cout << "$";
+				cin >> toVault;
+
+				if (toVault > player.money)
 				{
-					space();
-					cout << "[!] Passcode Must Contain Six Digits." << endl;
+					clear();
+					cout << "[!] Error, Insufficient Balance" << endl;
 					pause();
 					break;
 				}
 
-
-				try
-				{
-					pinNumber = stoi(passCode);
-					cout << "[+] " << green << "Successfully " << reset << "Created Passcode | Passcode: " << passCode << endl;
-					player.hasPasscode = true;
-					getKey();
-				}
-				catch (invalid_argument&)
+				if (toVault < 0)
 				{
 					clear();
-					cout << "[!] Error Numbers Only" << endl;
+					cout << "[!] Error, You cannot vault a negative number" << endl;
 					pause();
-					failed = true;
-				}
-				catch (out_of_range&)
-				{
-					clear();
-					cout << "[!] Six Digits Only." << endl;
-					pause();
-					failed = true;
+					break;
 				}
 
-				if (failed)
+				cout << "[+] " << green << "Successfully " << reset << "Vaulted " << toVault << endl;
+				player.vault += toVault;
+				player.money -= toVault;
+				cout << "Vault Balance: $" << player.vault << endl;
+				getKey();
+				break;
+			}
+
+			case Withdrawal:
+			{
+				clear();
+
+				if (!player.vaultOpen)
 				{
-					failed = false;
+					if (player.hasPasscode = true)
+					{
+						int passcodeCheck;
+						cout << "Passcode:";
+						cin >> passcodeCheck;
+
+						int invalid = 0;
+
+						if (passcodeCheck != pinNumber)
+						{
+							cout << "[!] Invalid Passcode! | " << invalid - 3 << " Attempts Remaining." << endl;
+							invalid++;
+							continue;
+
+							if (invalid == 3)
+							{
+								clear();
+								cout << "[!] Try again Later." << endl;
+								pause();
+								break;
+							}
+						}
+					}
+				}
+
+				if (player.vault == 0)
+				{
+					clear();
+					cout << "[!] Error, Cannot withdrawal." << endl;
+					cout << "Vault Balance:" << player.vault << endl;
+					pause();
+					break;
+				}
+
+				float fromVault;
+				cout << "How much would you like to withdrawal?" << endl;
+				cout << "Amount: $";
+				cin >> fromVault;
+
+				if (input())
+				{
 					continue;
 				}
-			}
-			clear();
 
-			int toVault = 0;
-			int vaultSnap = 0;
-			cout << "How much money would you like to vault | Vault Balance: $" << player.vault << endl;
-			space(); 
+				if (fromVault == 0 || fromVault < 0 || fromVault > player.vault)
+				{
+					clear();
+					cout << "[!] Error, Invalid Optoion" << endl;
+					pause();
+					break;
+				}
 
-			cout << "$";
-			cin >> toVault;
-
-			if (toVault > player.money)
-			{
-				clear();
-				cout << "[!] Error, Insufficient Balance" << endl;
-				pause();
-				break;
-			}
-
-			if (toVault < 0)
-			{
-				clear();
-				cout << "[!] Error, You cannot vault a negative number" << endl;
-				pause();
-				break;
+				space();
+				float vaultSnap = player.vault;
+				player.money += fromVault;
+				player.vault -= fromVault;
+				cout << "[+] " << green << "Successfully" << reset << " Withdrawed " << fromVault << endl;
+				
+				cout << vaultSnap << " -> " << player.vault << " (" << red << "-" << fromVault << reset << ")" << endl;
 			}
 
-			cout << "[+] " << green << "Successfully " << reset << "Vaulted " << toVault << endl;
-			player.vault += toVault;
-			player.money -= toVault;
-			cout << "Vault Balance: $" << player.vault << endl;
-			getKey();
-
-			break;
+			}
 		}
+		break;
 		
 		case Loan:
+			clear();
 
 		break;
 
@@ -299,9 +402,49 @@ auto main() -> int
 			player.Stats();
 		break;
 
+		case Settings:
+		{
+			clear();
+			bool inSettings = true;
+
+			while (inSettings)
+			{
+				clear();
+				if (player.vaultOpen) cout << "[1] Keep Vault Open -> " << green << "On" << reset << endl;
+				else cout << "[1] Keep Vault Open -> " << red << "Off" << reset << endl;
+
+				if (player.fastMode) cout << "[2] Instant Bot Gusses -> " << green << "On" << reset << endl;
+				else cout << "[2] Instant Bot Gusses -> " << red << "Off" << reset << endl;
+				cout << "[Q] " << red << "Quit" << reset << endl;
+				char key = _getch();
+
+				switch (tolower(key))
+				{
+				case '1':
+					if (!player.vaultOpen) player.vaultOpen = true;
+					else player.vaultOpen = false;
+					break;
+
+				case '2':
+					if (!player.fastMode) player.fastMode = true;
+					else player.fastMode = false;
+					break;
+
+				case 'q':
+					inSettings = false;
+					break;
+				}
+			}
+			break;
+		}
+
 		case Quit:
 			shutDown();
 		break;
+
+		default:
+			invalid();
+			break;
 		}
 	}
 }

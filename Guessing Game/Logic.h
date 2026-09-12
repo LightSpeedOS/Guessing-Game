@@ -5,7 +5,7 @@ struct Player
 	string name = "Jamaal";
 	float money = 500;
 	int bet;
-	int vault;
+	float vault;
 	int guess;
 	int depo;
 
@@ -16,6 +16,9 @@ struct Player
 	float gameWin;
 	float gameLoss;
 	float gamesPlayed;
+
+	bool vaultOpen = false;
+	bool fastMode = false;
 
 	void Wins(float multiplier)
 	{
@@ -31,7 +34,7 @@ struct Player
 		gamesPlayed++;
 	}
 	
-	int netWorth()
+	float netWorth()
 	{
 		return money + vault;
 	}
@@ -79,7 +82,14 @@ enum mainMenu
 	Vault,
 	Loan,
 	PNL,
+	Settings,
 	Quit,
+};
+
+enum vaultMenu
+{
+	Depo = 1,
+	Withdrawal
 };
 
 enum gameDifficulties

@@ -10,6 +10,7 @@
 #include <conio.h>
 #include <iomanip>
 #include <string>
+#include <fstream>
 
 
 using namespace std;
@@ -92,6 +93,14 @@ void shutDown()
 		cout << ".";
 		return;
 	}
+}
+
+void invalid()
+{
+	clear();
+	cout << "[!] Invalid Option" << endl;
+	pause();
+	return;
 }
 
 
